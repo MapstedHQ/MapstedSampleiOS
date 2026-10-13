@@ -2,7 +2,7 @@
 
 A native iOS sample application demonstrating how to integrate the **Mapsted Mobile SDK** (indoor
 positioning, mapping, wayfinding, and location-based services) into an iOS app. Built against the
-current **Mapsted SDK 26.7.1** release.
+current **Mapsted iOS SDK 26.10.2** release (CocoaPods, pinned to exactly `26.10.2` in `Sample/Podfile`).
 
 A sample Mapsted licence file is included, providing access to the **Square One Shopping Centre**
 (propertyId `504`) so you can run the app out of the box.
@@ -12,7 +12,7 @@ A sample Mapsted licence file is included, providing access to the **Square One 
 | | Minimum |
 |---|---|
 | iOS deployment target | **16.0** |
-| Xcode | 15.0+ |
+| Xcode | 26.3+ |
 | CocoaPods | 1.16+ |
 
 ## Setup
@@ -31,7 +31,14 @@ A sample Mapsted licence file is included, providing access to the **Square One 
 4. Ensure the Mapsted licence file (`ios_licence.key`) is present in the app's `Resources` folder.
    The included sample licence covers Square One (propertyId `504`); use your own licence key for
    your own properties.
-5. Select a device or simulator and run.
+5. Select a scheme and a device or simulator, then run:
+   - **Sample** — map with the prebuilt Map UI (search, floor selector, routing), plus commented example
+     calls for entity search, route requests and distance estimates in `MainViewController.swift`
+   - **Sample_MapOnly** — map without the prebuilt UI
+   - **Sample_LocSimulation** — simulated walk through the venue with geofence alerts
+
+More feature-by-feature samples are in
+[MapstedMobileSampleProjects](https://github.com/MapstedHQ/MapstedMobileSampleProjects).
 
 ## Documentation
 

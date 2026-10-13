@@ -340,19 +340,20 @@ class MainViewController : UIViewController {
         let entities = CoreApi.PropertyManager.findEntityByName(name: "Appl", propertyId: propertyId)
         if let destination = entities.first as? MNSearchEntity {
             let useStairs = false
-            let routeOptions = MNRouteOptions(useStairs,
-                                              escalators: true,
-                                              elevators: true,
-                                              current: true,
-                                              optimized: true)
+            let routeOptions = MNRoutingOptionsBuilder().setIncludeEscalators(true)
+                                              .setIncludeStairs(useStairs)
+                                              .setIncludeRamps(true)
+                                              .setIncludeElevators(true)
+                                              .setItineraryOptimization(true)
+                                              .build()
             
             CoreApi.RoutingManager.requestEstimateFromCurrentLocation(destination: destination,
                                                                       routeOptions: routeOptions,
                                                                       completion: { distTime in
                 
                 if let distanceTime = distTime {
-                    self.Logger.Log("Estimated distance is", distanceTime.distanceInMeters)
-					self.Logger.Log("Estimated time is", distanceTime.timeInMinutes)
+                    self.Logger.Log("Estimated distance is", distanceTime.distanceMeters)
+					self.Logger.Log("Estimated time is", distanceTime.timeMinutes)
                 }
             })
         }
@@ -364,19 +365,20 @@ class MainViewController : UIViewController {
         let entities = CoreApi.PropertyManager.findEntityByName(name: "an", propertyId: propertyId)
         if let from = entities.first as? MNSearchEntity, let to = entities[1...].randomElement() as? MNSearchEntity {
             let useStairs = false
-            let routeOptions = MNRouteOptions(useStairs,
-                                              escalators: true,
-                                              elevators: true,
-                                              current: false,
-                                              optimized: true)
+            let routeOptions = MNRoutingOptionsBuilder().setIncludeEscalators(true)
+                                              .setIncludeStairs(useStairs)
+                                              .setIncludeRamps(true)
+                                              .setIncludeElevators(true)
+                                              .setItineraryOptimization(true)
+                                              .build()
 			self.Logger.Log("Estimating distance from", "\(from.displayName) to \(to.displayName)")
             CoreApi.RoutingManager.requestEstimate(start: from,
                                                    destination: to,
                                                    routeOptions: routeOptions,
                                                    completion: { distTime in
                 if let distanceTime = distTime {
-					self.Logger.Log("Estimated distance is", "\(distanceTime.distanceInMeters) meter(s)")
-					self.Logger.Log("Estimated time is", "\(distanceTime.timeInMinutes) minute(s)")
+					self.Logger.Log("Estimated distance is", "\(distanceTime.distanceMeters) meter(s)")
+					self.Logger.Log("Estimated time is", "\(distanceTime.timeMinutes) minute(s)")
                 }
             })
         }
@@ -411,7 +413,8 @@ class MainViewController : UIViewController {
             let randomDestination2 = otherEntities.randomElement(){
             
             
-            self.makeRouteRequest(start: firstMatch,
+            self.makeRouteRequest(propertyId: propertyId,
+                                  start: firstMatch,
                                   fromCurrentLocation: false,
                                   destinations: [randomDestination1, randomDestination2])
             
@@ -420,17 +423,18 @@ class MainViewController : UIViewController {
         
     }
     
-    fileprivate func makeRouteRequest(start: ISearchable?, fromCurrentLocation: Bool, destinations: [ISearchable]) {
+    fileprivate func makeRouteRequest(propertyId: Int, start: ISearchable?, fromCurrentLocation: Bool, destinations: [ISearchable]) {
         let optimizedRoute = true
         let useStairs = false
         let useEscalators = true
         let useElevators = true
         
-        let routeOptions = MNRouteOptions(useStairs,
-                                          escalators: useEscalators,
-                                          elevators: useElevators,
-                                          current: fromCurrentLocation,
-                                          optimized: optimizedRoute)
+        let routingOptions = MNRoutingOptionsBuilder().setIncludeEscalators(useEscalators)
+                                              .setIncludeStairs(useStairs)
+                                              .setIncludeRamps(true)
+                                              .setIncludeElevators(useElevators)
+                                              .setItineraryOptimization(optimizedRoute)
+                                              .build()
         
         let start = start as? MNSearchEntity
         let pois = destinations.compactMap({$0 as? MNSearchEntity})
@@ -438,14 +442,16 @@ class MainViewController : UIViewController {
                 
             //Build a route request
         var routeRequest: MNRouteRequest?
-        routeRequest = MNRouteRequest(routeOptions: routeOptions,
-                                      destinations:pois,
-                                      startEntity: fromCurrentLocation ? nil : start)
+        routeRequest = MNRouteRequest(propertyId: propertyId,
+                                      startWaypoint: fromCurrentLocation ? nil : start,
+                                      destinationWaypoints: pois,
+                                      routingOptions: routingOptions,
+                                      routingConstraints: MNRoutingConstraints.emptyInstance(),
+                                      isFromCurrentLocation: fromCurrentLocation)
         
         
         if let routeRequest = routeRequest {
             
-                //@Daniel: Let's put this in async queue
             DispatchQueue.global(qos: .userInteractive).async {
                 CoreApi.RoutingManager.requestRoute(request: routeRequest, routingRequestCallback: self)
             }
@@ -479,11 +485,15 @@ extension MainViewController : CoreInitCallback {
 //MARK: - Routing Request Callback methods
 extension MainViewController: RoutingRequestCallback {
     func onSuccess(routeResponse: MNRouteResponse) {
-        MapstedMapApi.shared.handleRouteResponse(routeResponse: routeResponse)
+        if let routeError = routeResponse.routeError {
+            self.Logger.Log("Route response", "successful: \(routeError.isSuccessful)")
+        }
     }
     
-    func onError(errorCode: Int, errorMessage: String, alertIds: [String]) {
-        MapstedMapApi.shared.handleRouteError(errorCode: errorCode, errorMessage: errorMessage, alertIds: alertIds)
+    func onError(routeResponse: MNRouteResponse) {
+        if let routeError = routeResponse.routeError {
+            self.Logger.Log("Route error", String(describing: routeError.errorMessage))
+        }
     }
     
     

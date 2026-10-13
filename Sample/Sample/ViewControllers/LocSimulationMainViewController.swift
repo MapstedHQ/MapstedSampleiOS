@@ -12,7 +12,6 @@ import MapstedMap
 import MapstedMapUi
 import LocationMarketing
 import MapKit
-import MapstedGeofence
 
 enum SimulatorPath {
     case LevelOne_ToFido
@@ -34,7 +33,7 @@ class LocSimulationMainViewController : UIViewController {
     private var simulatorPath: SimulatorPath = .LevelOne_LevelTwo_ToFootLocker
     private var simulatorWalkSpeedModifier: Float = 2.0
     
-    var arrGeoTriggers: [GeofenceTrigger] = []
+    var arrGeoTriggers: [CoreEngineGeofenceTriggerBuilder] = []
 
     //MARK: - Segue Handler
     
@@ -260,35 +259,35 @@ extension LocSimulationMainViewController {
         let floorId = 941 //L1
         let delaySecond: Float = 5.0
         
-        MapstedGeofence.GeofenceManager.shared.addListener(geofenceCallback: self)
+        CoreApi.GeofenceManager.addListener(self)
 
         //Entity Entry Exit Trigger - for Foot Locker
-        let addEntityEntryTrigger = GeoFenceUtility.shared.createGeofenceForEntity(propertyId: propertyId, entityId: entityId, buildingId: buildingId, floorId: 942, geofenceId: "Trigger-Entity-Entry-\(entityId)", delaySecond: delaySecond, direction: .On_Enter)
-        let addEntityExitTrigger = GeoFenceUtility.shared.createGeofenceForEntity(propertyId: propertyId, entityId: entityId, buildingId: buildingId, floorId: 942, geofenceId: "Trigger-Entity-Exit-\(entityId)", delaySecond: delaySecond, direction: .On_Exit)
+        let addEntityEntryTrigger = GeoFenceUtility.shared.createGeofenceForEntity(propertyId: propertyId, entityId: entityId, buildingId: buildingId, floorId: 942, geofenceId: "Trigger-Entity-Entry-\(entityId)", delaySecond: delaySecond, direction: .ON_ENTER)
+        let addEntityExitTrigger = GeoFenceUtility.shared.createGeofenceForEntity(propertyId: propertyId, entityId: entityId, buildingId: buildingId, floorId: 942, geofenceId: "Trigger-Entity-Exit-\(entityId)", delaySecond: delaySecond, direction: .ON_EXIT)
 
         //Property Entry Exit Trigger - for Square one
-        let addPropertyEntryTrigger = GeoFenceUtility.shared.createGeofenceForProperty(propertyId: propertyId, geofenceId: "Trigger-Property-Entry-\(propertyId)", delaySecond: delaySecond, direction: .On_Enter)
-        let addPropertyExitTrigger = GeoFenceUtility.shared.createGeofenceForProperty(propertyId: propertyId, geofenceId: "Trigger-Property-Exit-\(propertyId)", delaySecond: delaySecond, direction: .On_Exit)
+        let addPropertyEntryTrigger = GeoFenceUtility.shared.createGeofenceForProperty(propertyId: propertyId, geofenceId: "Trigger-Property-Entry-\(propertyId)", delaySecond: delaySecond, direction: .ON_ENTER)
+        let addPropertyExitTrigger = GeoFenceUtility.shared.createGeofenceForProperty(propertyId: propertyId, geofenceId: "Trigger-Property-Exit-\(propertyId)", delaySecond: delaySecond, direction: .ON_EXIT)
 
         //Building Entry Exit Trigger - for Square one
-        let addBuildingEntryTrigger = GeoFenceUtility.shared.createGeofenceForBuilding(propertyId: propertyId, buildingId: buildingId, geofenceId: "Trigger-Building-Entry-\(buildingId)", delaySecond: delaySecond, direction: .On_Enter)
-        let addBuildingExitTrigger = GeoFenceUtility.shared.createGeofenceForBuilding(propertyId: propertyId, buildingId: buildingId, geofenceId: "Trigger-Building-Exit-\(buildingId)", delaySecond: delaySecond, direction: .On_Exit)
+        let addBuildingEntryTrigger = GeoFenceUtility.shared.createGeofenceForBuilding(propertyId: propertyId, buildingId: buildingId, geofenceId: "Trigger-Building-Entry-\(buildingId)", delaySecond: delaySecond, direction: .ON_ENTER)
+        let addBuildingExitTrigger = GeoFenceUtility.shared.createGeofenceForBuilding(propertyId: propertyId, buildingId: buildingId, geofenceId: "Trigger-Building-Exit-\(buildingId)", delaySecond: delaySecond, direction: .ON_EXIT)
 
         //Floor Entry Exit Trigger - Floor L1
-        let addFloorEntryTrigger = GeoFenceUtility.shared.createGeofenceForFloor(propertyId: propertyId, floorId: floorId, geofenceId: "Trigger-Floor-Entry-\(floorId)", delaySecond: delaySecond, direction: .On_Enter)
-        let addFloorExitTrigger = GeoFenceUtility.shared.createGeofenceForFloor(propertyId: propertyId, floorId: floorId, geofenceId: "Trigger-Floor-Exit-\(floorId)", delaySecond: delaySecond, direction: .On_Exit)
+        let addFloorEntryTrigger = GeoFenceUtility.shared.createGeofenceForFloor(propertyId: propertyId, floorId: floorId, geofenceId: "Trigger-Floor-Entry-\(floorId)", delaySecond: delaySecond, direction: .ON_ENTER)
+        let addFloorExitTrigger = GeoFenceUtility.shared.createGeofenceForFloor(propertyId: propertyId, floorId: floorId, geofenceId: "Trigger-Floor-Exit-\(floorId)", delaySecond: delaySecond, direction: .ON_EXIT)
 
-        self.arrGeoTriggers = [addEntityEntryTrigger, addEntityExitTrigger, addPropertyEntryTrigger, addPropertyExitTrigger, addBuildingEntryTrigger, addBuildingExitTrigger, addFloorEntryTrigger, addFloorExitTrigger]
+        self.arrGeoTriggers = [addEntityEntryTrigger, addEntityExitTrigger, addPropertyEntryTrigger, addPropertyExitTrigger, addBuildingEntryTrigger, addBuildingExitTrigger, addFloorEntryTrigger, addFloorExitTrigger].compactMap { $0 }
         
-        let _ = MapstedGeofence.GeofenceManager.shared.addGeofenceTriggers(propertyId: propertyId, geofenceTriggers: self.arrGeoTriggers)
+        let _ = EngineFacade.shared.addGeofenceTriggers(propertyId: propertyId, builders: self.arrGeoTriggers)
     }
     
     func removeGeofenceTrigger(propertyId: Int, geofenceId: String) -> Bool {
-        return MapstedGeofence.GeofenceManager.shared.removeGeofenceTrigger(propertyId: propertyId, geofenceId: geofenceId)
+        return EngineFacade.shared.removeGeofenceTrigger(propertyId: propertyId, geofenceId: geofenceId)
     }
     
     func removeAllGeofenceTriggers(propertyId: Int) -> Bool {
-        return MapstedGeofence.GeofenceManager.shared.removeAllGeofenceTriggers(propertyId: propertyId)
+        return EngineFacade.shared.removeAllGeofenceTriggers(propertyId: propertyId)
     }
     
     func handleGeofence(propertyId: Int, geofenceId: String) {
@@ -342,9 +341,9 @@ extension LocSimulationMainViewController {
 
 
 
-extension LocSimulationMainViewController : GeofenceCallback {
-    func onGeofenceTriggered(propertyId: Int, geofenceId: String) {
-        self.handleGeofence(propertyId: propertyId, geofenceId: geofenceId)
+extension LocSimulationMainViewController : GeofenceEventListener {
+    func onGeofenceEvent(propertyId: Int, triggerId: String) {
+        self.handleGeofence(propertyId: propertyId, geofenceId: triggerId)
     }
     
     

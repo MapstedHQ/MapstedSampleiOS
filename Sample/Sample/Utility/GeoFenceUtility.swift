@@ -8,54 +8,62 @@
 
 import Foundation
 import MapstedCore
-import MapstedGeofence
 
 
 class GeoFenceUtility: NSObject {
-    
+
     static let shared = GeoFenceUtility()
 
     private override init() {
         super.init()
     }
-    
-    // Create a Geofence for Entity
-    func createGeofenceForEntity(propertyId: Int, entityId: Int, buildingId: Int, floorId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: ActivationDirection) -> GeofenceTrigger {
-        
-        let entityLocationCriteria = PoiVicinityLocationCriteria.Builder().addEntityZone(entityZone: MNEntityZone.init(propertyId: propertyId, buildingId: buildingId, floorId: floorId, entityId: entityId)).setTriggerDirection(direction: direction).setTriggerDelay(delayInSeconds: delaySecond, ignoreDelayedEventIfStateChanged: stateChange).build()
 
-        let addEntityTrigger = GeofenceTrigger.Builder(propertyId: propertyId, geofenceId: geofenceId).setLocationCriteria(locationCriteria: entityLocationCriteria).build()
-        
-        return addEntityTrigger
+    // Create a Geofence for Entity
+    func createGeofenceForEntity(propertyId: Int, entityId: Int, buildingId: Int, floorId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: EnumLocationCriteriaTriggerDirection) -> CoreEngineGeofenceTriggerBuilder? {
+
+        let entityLocationCriteria = CoreEnginePoiVicinityLocationCriteria()
+        entityLocationCriteria.entityZones = [MNEntityZone(propertyId: propertyId, buildingId: buildingId, floorId: floorId, entityId: entityId)]
+        entityLocationCriteria.triggerDirection = direction
+        entityLocationCriteria.setTriggerDelay(delaySecond, ignoreDelayedEventIfStateChanged: stateChange)
+
+        let builder = CoreEngineGeofenceTriggerBuilder(propertyId: propertyId, geofenceId: geofenceId)
+        builder?.setLocationCriteria(entityLocationCriteria)
+        return builder
     }
 
     // Create a Geofence for Property
-    func createGeofenceForProperty(propertyId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: ActivationDirection) -> GeofenceTrigger {
-        
-        let propertyLocationCriteria = PropertyLocationCriteria.Builder(propertyId: propertyId).setTriggerDirection(direction: direction).setTriggerDelay(delayInSeconds: delaySecond, ignoreDelayedEventIfStateChanged: stateChange).build()
+    func createGeofenceForProperty(propertyId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: EnumLocationCriteriaTriggerDirection) -> CoreEngineGeofenceTriggerBuilder? {
 
-        let addPropertyTrigger = GeofenceTrigger.Builder(propertyId: propertyId, geofenceId: geofenceId).setLocationCriteria(locationCriteria: propertyLocationCriteria).build()
+        guard let propertyLocationCriteria = CoreEnginePropertyLocationCriteria(propertyId: propertyId) else { return nil }
+        propertyLocationCriteria.triggerDirection = direction
+        propertyLocationCriteria.setTriggerDelay(delaySecond, ignoreDelayedEventIfStateChanged: stateChange)
 
-        return addPropertyTrigger
+        let builder = CoreEngineGeofenceTriggerBuilder(propertyId: propertyId, geofenceId: geofenceId)
+        builder?.setLocationCriteria(propertyLocationCriteria)
+        return builder
     }
 
     // Create a Geofence for Building
-    func createGeofenceForBuilding(propertyId: Int, buildingId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: ActivationDirection) -> GeofenceTrigger {
-        
-        let buildingLocationCriteria = BuildingLocationCriteria.Builder(buildingId: buildingId).setTriggerDirection(direction: direction).setTriggerDelay(delayInSeconds: delaySecond, ignoreDelayedEventIfStateChanged: stateChange).build()
+    func createGeofenceForBuilding(propertyId: Int, buildingId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: EnumLocationCriteriaTriggerDirection) -> CoreEngineGeofenceTriggerBuilder? {
 
-        let addBuildingTrigger = GeofenceTrigger.Builder(propertyId: propertyId, geofenceId: geofenceId).setLocationCriteria(locationCriteria: buildingLocationCriteria).build()
-        
-        return addBuildingTrigger
+        guard let buildingLocationCriteria = CoreEngineBuildingLocationCriteria(buildingId: buildingId) else { return nil }
+        buildingLocationCriteria.triggerDirection = direction
+        buildingLocationCriteria.setTriggerDelay(delaySecond, ignoreDelayedEventIfStateChanged: stateChange)
+
+        let builder = CoreEngineGeofenceTriggerBuilder(propertyId: propertyId, geofenceId: geofenceId)
+        builder?.setLocationCriteria(buildingLocationCriteria)
+        return builder
     }
 
     // Create a Geofence for Floor
-    func createGeofenceForFloor(propertyId: Int, floorId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: ActivationDirection) -> GeofenceTrigger {
-        
-        let floorLocationCriteria = FloorLocationCriteria.Builder(floorId: floorId).setTriggerDirection(direction: direction).setTriggerDelay(delayInSeconds: delaySecond, ignoreDelayedEventIfStateChanged: stateChange).build()
+    func createGeofenceForFloor(propertyId: Int, floorId: Int, geofenceId: String, delaySecond: Float = 5.0, stateChange: Bool = false, direction: EnumLocationCriteriaTriggerDirection) -> CoreEngineGeofenceTriggerBuilder? {
 
-        let addFloorTrigger = GeofenceTrigger.Builder(propertyId: propertyId, geofenceId: geofenceId).setLocationCriteria(locationCriteria: floorLocationCriteria).build()
+        guard let floorLocationCriteria = CoreEngineFloorLocationCriteria(floorId: floorId) else { return nil }
+        floorLocationCriteria.triggerDirection = direction
+        floorLocationCriteria.setTriggerDelay(delaySecond, ignoreDelayedEventIfStateChanged: stateChange)
 
-        return addFloorTrigger
+        let builder = CoreEngineGeofenceTriggerBuilder(propertyId: propertyId, geofenceId: geofenceId)
+        builder?.setLocationCriteria(floorLocationCriteria)
+        return builder
     }
 }
