@@ -2,7 +2,7 @@
 
 A native iOS sample application demonstrating how to integrate the **Mapsted Mobile SDK** (indoor
 positioning, mapping, wayfinding, and location-based services) into an iOS app. Built against the
-current **Mapsted iOS SDK 26.10.2** release (CocoaPods, pinned to exactly `26.10.2` in `Sample/Podfile`).
+current **Mapsted iOS SDK 26.10.3** release (CocoaPods, pinned to exactly `26.10.3` in `Sample/Podfile`).
 
 A sample Mapsted licence file is included, providing access to the **Square One Shopping Centre**
 (propertyId `504`) so you can run the app out of the box.
